@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Password Generator</title>
+  <link rel="stylesheet" href="style.css">
+  <style type="text/css">
+    body {
+  font-family: Arial, sans-serif;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  background-color: #f4f4f4;
+  margin: 0;
+}
+
+.password-generator {
+  background: white;
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  text-align: center;
+}
+
+h1 {
+  margin-bottom: 20px;
+}
+
+.output {
+  display: flex;
+  margin-bottom: 20px;
+}
+
+#password {
+  flex: 1;
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-right: none;
+  border-radius: 4px 0 0 4px;
+}
+
+#copy-btn {
+  padding: 10px;
+  background-color: #3498db;
+  color: white;
+  border: none;
+  cursor: pointer;
+  border-radius: 0 4px 4px 0;
+}
+
+.controls {
+  margin-bottom: 20px;
+}
+
+label {
+  display: block;
+  margin-bottom: 10px;
+}
+
+button {
+  padding: 10px 20px;
+  background-color: #3498db;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+button:hover {
+  background-color: #2980b9;
+}
+
+input[type="number"] {
+  padding: 5px;
+  width: 60px;
+  margin-left: 10px;
+}
+
+.options {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 20px;
+}
+
+input[type="checkbox"] {
+  margin-right: 10px;
+}
+
+#passwords {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid #ccc;
+  margin-top: 20px;
+  resize: none;
+}
+
+textarea {
+  font-family: monospace;
+}
+
+
+  </style>
+</head>
+<body>
+  <div class="password-generator">
+    <h1>Password Generator</h1>
+    
+    <div class="controls">
+      <label for="length">Password Length:</label>
+      <input type="number" id="length" min="8" max="32" value="16">
+    </div>
+
+    <div class="controls">
+      <label for="quantity">Number of Passwords:</label>
+      <select id="quantity">
+        <option value="50">50</option>
+        <option value="100">100</option>
+        <option value="500">500</option>
+        <option value="1000">1000</option>
+      </select>
+    </div>
+
+    <div class="options">
+      <label><input type="checkbox" id="uppercase" checked> Include Uppercase</label>
+      <label><input type="checkbox" id="lowercase" checked> Include Lowercase</label>
+      <label><input type="checkbox" id="numbers" checked> Include Numbers</label>
+      <label><input type="checkbox" id="symbols" checked> Include Symbols</label>
+    </div>
+
+    <button id="generate-btn">Generate Passwords</button>
+    
+    <div class="output">
+      <textarea id="passwords" rows="10" readonly></textarea>
+      <button id="copy-btn">Copy All</button>
+    </div>
+  </div>
+
+<script type="text/javascript">
+const passwordEl = document.getElementById('passwords');
+const copyBtn = document.getElementById('copy-btn');
+const lengthEl = document.getElementById('length');
+const quantityEl = document.getElementById('quantity');
+const uppercaseEl = document.getElementById('uppercase');
+const lowercaseEl = document.getElementById('lowercase');
+const numbersEl = document.getElementById('numbers');
+const symbolsEl = document.getElementById('symbols');
+const generateBtn = document.getElementById('generate-btn');
+
+const randomFunc = {
+  upper: getRandomUppercase,
+  lower: getRandomLowercase,
+  number: getRandomNumber,
+  symbol: getRandomSymbol,
+};
+
+// Generate passwords based on user input
+generateBtn.addEventListener('click', () => {
+  const length = +lengthEl.value;
+  const quantity = +quantityEl.value;
+  const hasUpper = uppercaseEl.checked;
+  const hasLower = lowercaseEl.checked;
+  const hasNumber = numbersEl.checked;
+  const hasSymbol = symbolsEl.checked;
+
+  const passwords = generatePasswords(hasUpper, hasLower, hasNumber, hasSymbol, length, quantity);
+  passwordEl.value = passwords.join('\n');
+});
+
+// Copy all generated passwords
+copyBtn.addEventListener('click', () => {
+  passwordEl.select();
+  document.execCommand('copy');
+  alert('Passwords copied to clipboard');
+});
+
+// Function to generate multiple passwords
+function generatePasswords(upper, lower, number, symbol, length, quantity) {
+  let allPasswords = [];
+
+  for (let i = 0; i < quantity; i++) {
+    allPasswords.push(generatePassword(upper, lower, number, symbol, length));
+  }
+
+  return allPasswords;
+}
+
+// Function to generate a single password
+function generatePassword(upper, lower, number, symbol, length) {
+  let generatedPassword = '';
+  const typesCount = upper + lower + number + symbol;
+  const typesArr = [{ upper }, { lower }, { number }, { symbol }].filter(item => Object.values(item)[0]);
+
+  if (typesCount === 0) {
+    return '';
+  }
+
+  for (let i = 0; i < length; i += typesCount) {
+    typesArr.forEach(type => {
+      const funcName = Object.keys(type)[0];
+      generatedPassword += randomFunc[funcName]();
+    });
+  }
+
+  return generatedPassword.slice(0, length);
+}
+
+// Random functions for generating character types
+function getRandomUppercase() {
+  return String.fromCharCode(Math.floor(Math.random() * 26) + 65);
+}
+
+function getRandomLowercase() {
+  return String.fromCharCode(Math.floor(Math.random() * 26) + 97);
+}
+
+function getRandomNumber() {
+  return String.fromCharCode(Math.floor(Math.random() * 10) + 48);
+}
+
+function getRandomSymbol() {
+  const symbols = '!@#$%^&*(){}[]=<>/,.';
+  return symbols[Math.floor(Math.random() * symbols.length)];
+}
+
+
+  </script>
+</body>
+</html>
